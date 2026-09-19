@@ -26,6 +26,7 @@ export class RemoteClient {
   private heartbeatTimer: number | null = null;
   private reconnectAttempt = 0;
   private closedByUser = false;
+  private latestRevision = -1;
 
   constructor(
     private readonly url: string,
@@ -104,8 +105,14 @@ export class RemoteClient {
   private handleMessage(message: ServerMessage) {
     switch (message.type) {
       case "welcome":
-      case "state":
+        this.latestRevision = message.state.revision;
         this.events.onState(message.state);
+        break;
+      case "state":
+        if (message.state.revision >= this.latestRevision) {
+          this.latestRevision = message.state.revision;
+          this.events.onState(message.state);
+        }
         break;
       case "error":
         this.events.onError(message.message);
