@@ -21,6 +21,17 @@ describe("remote reducer", () => {
     expect(next.studio.sections[next.studio.currentSectionIndex].id).toBe("bridge");
   });
 
+  it("selects a setlist song without pretending it is a section", () => {
+    const next = reducer(initialState, {
+      type: "demoCommand",
+      command: "setlist.song",
+      payload: { id: "graves" }
+    });
+    expect(next.studio.song.id).toBe("graves");
+    expect(next.studio.currentSectionIndex).toBe(0);
+    expect(next.studio.setlist.find((song) => song.id === "graves")?.current).toBe(true);
+  });
+
   it("updates a mixer channel without touching another channel", () => {
     const originalSecond = initialState.studio.mixer[1].gainDb;
     const next = reducer(initialState, {
