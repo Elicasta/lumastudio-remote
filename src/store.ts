@@ -104,6 +104,24 @@ export function reducer(state: AppState, action: AppAction): AppState {
       studio.lighting.x = Number(action.payload?.x ?? studio.lighting.x);
       studio.lighting.y = Number(action.payload?.y ?? studio.lighting.y);
       break;
+    case "setlist.song": {
+      const id = String(action.payload?.id ?? "");
+      const selected = studio.setlist.find((song) => song.id === id);
+      if (selected) {
+        studio.setlist.forEach((song) => {
+          song.current = song.id === id;
+        });
+        studio.song.id = selected.id;
+        studio.song.title = selected.title;
+        studio.song.artist = selected.artist;
+        studio.song.bpm = selected.bpm;
+        studio.song.key = selected.key;
+        studio.currentSectionIndex = 0;
+        studio.queuedSectionIndex = studio.sections.length > 1 ? 1 : null;
+        studio.transport.positionSeconds = 0;
+      }
+      break;
+    }
   }
 
   studio.revision += 1;
