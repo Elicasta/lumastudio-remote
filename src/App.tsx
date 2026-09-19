@@ -39,6 +39,7 @@ export function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [connection, setConnection] = useState<ConnectionStatus>("idle");
   const [connectOpen, setConnectOpen] = useState(true);
+  const [demoMode, setDemoMode] = useState(false);
   const [serverUrl, setServerUrl] = useState(
     localStorage.getItem("lumarig.remote.url") ??
       "ws://lumarig-studio.local:7070/remote"
@@ -66,6 +67,7 @@ export function App() {
     const client = new RemoteClient(serverUrl, pin, {
       onStatus: setConnection,
       onState: (studio) => {
+        setDemoMode(false);
         dispatch({ type: "studio", state: studio });
         setConnectOpen(false);
       },
@@ -79,6 +81,7 @@ export function App() {
   function demo() {
     clientRef.current?.disconnect();
     setConnection("connected");
+    setDemoMode(true);
     setError(null);
     setConnectOpen(false);
   }
@@ -86,7 +89,7 @@ export function App() {
   function command(commandName: RemoteCommand, payload?: Record<string, unknown>) {
     haptic();
 
-    if (clientRef.current && connection === "connected" && !state.demo) {
+    if (clientRef.current && connection === "connected" && !demoMode) {
       clientRef.current.command(commandName, payload);
     } else {
       dispatch({ type: "demoCommand", command: commandName, payload });
@@ -672,7 +675,7 @@ function Setlist({ studio, command }: { studio: StudioState; command: CommandFn 
           <button
             key={song.id}
             className={song.current ? "setlist-row current" : "setlist-row"}
-            onClick={() => command("section.launch", { songId: song.id })}
+            onClick={() => command("setlist.song", { id: song.id })}
           >
             <span className="setlist-number">{index + 1}</span>
             <div>
