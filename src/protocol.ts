@@ -13,7 +13,8 @@ export type RemoteCommand =
   | "mixer.solo"
   | "lighting.blackout"
   | "lighting.scene"
-  | "lighting.xy"\n  | "setlist.song";
+  | "lighting.xy"
+  | "setlist.song";
 
 export interface SectionState {
   id: string;
