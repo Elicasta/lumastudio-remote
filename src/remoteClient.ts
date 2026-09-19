@@ -48,7 +48,7 @@ export class RemoteClient {
   }
 
   command(command: RemoteCommand, payload?: Record<string, unknown>) {
-    const id = crypto.randomUUID();
+    const id = commandId();
     this.send({ type: "command", id, command, payload });
     return id;
   }
@@ -137,4 +137,12 @@ function deviceName() {
   }
   if (/iPhone/i.test(ua)) return "LumaRig Remote · iPhone";
   return "LumaRig Remote · Web";
+}
+
+function commandId() {
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+
+  const bytes = new Uint8Array(12);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
 }
