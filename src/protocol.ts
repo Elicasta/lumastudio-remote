@@ -104,6 +104,7 @@ export interface StudioState {
     durationSeconds: number;
     bar: number;
     beat: number;
+    transitionActive: boolean;
     countInActive: boolean;
     countInBeat: number;
     countInTotal: number;
