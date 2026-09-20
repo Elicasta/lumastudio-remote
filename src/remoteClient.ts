@@ -166,6 +166,9 @@ export class RemoteClient {
           broadcast: {
             self: false,
             ack: true
+          },
+          presence: {
+            key: getRemoteInstanceId()
           }
         }
       })
@@ -202,6 +205,12 @@ export class RemoteClient {
         if (status === "SUBSCRIBED") {
           settled = true;
           this.events.onStatus("connected");
+
+          void channel.track({
+            type: "remote",
+            clientName: deviceName(),
+            connectedAt: new Date().toISOString()
+          });
 
           void channel.send({
             type: "broadcast",
@@ -292,4 +301,19 @@ function commandId() {
 function messageOf(cause: unknown) {
   if (cause instanceof Error) return cause.message;
   return String(cause);
+}
+
+
+function getRemoteInstanceId() {
+  const key = "lumarig.remote.instance-id";
+  const existing = localStorage.getItem(key);
+  if (existing) return existing;
+
+  const id =
+    typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : commandId();
+
+  localStorage.setItem(key, "remote-" + id);
+  return "remote-" + id;
 }
