@@ -430,11 +430,23 @@ function Performance({
         <button
           className="transport-key"
           onClick={() =>
-            command(studio.transport.playing ? "transport.pause" : "transport.play")
+            command(
+              studio.transport.playing || studio.transport.countInActive
+                ? "transport.pause"
+                : "transport.play"
+            )
           }
         >
-          {studio.transport.playing ? <Pause size={23} /> : <Play size={23} />}
-          <span>{studio.transport.playing ? "PAUSE" : "PLAY"}</span>
+          {studio.transport.playing || studio.transport.countInActive
+            ? <Pause size={23} />
+            : <Play size={23} />}
+          <span>
+            {studio.transport.countInActive
+              ? "CANCEL COUNT"
+              : studio.transport.playing
+                ? "PAUSE"
+                : "PLAY"}
+          </span>
         </button>
 
         <button
