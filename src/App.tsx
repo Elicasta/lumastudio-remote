@@ -287,6 +287,12 @@ function Performance({
     songIndex >= 0 && songIndex < studio.setlist.songs.length - 1
       ? studio.setlist.songs[songIndex + 1]
       : null;
+  const countActive = studio.transport.countInActive;
+  const queuedSection = studio.transport.queuedSectionId
+    ? studio.sections.find(
+        (section) => section.id === studio.transport.queuedSectionId
+      )
+    : null;
 
   return (
     <section className="performance-screen">
@@ -297,22 +303,45 @@ function Performance({
             className={
               index === studio.currentSectionIndex
                 ? "section-chip current"
-                : index === studio.queuedSectionIndex
-                  ? "section-chip queued"
-                  : "section-chip"
+                : section.id === studio.transport.queuedSectionId
+                  ? "section-chip manual-queued"
+                  : index === studio.queuedSectionIndex
+                    ? "section-chip queued"
+                    : "section-chip"
             }
             onClick={() => command("section.launch", { id: section.id })}
+            disabled={countActive}
           >
             <small>{section.startBar}</small>
             <strong>{section.name}</strong>
-            <span>{section.lengthBars} bars</span>
+            <span>
+              {section.id === studio.transport.queuedSectionId
+                ? "queued override"
+                : section.lengthBars + " bars"}
+            </span>
           </button>
         ))}
       </div>
 
+      {countActive && (
+        <div className="remote-count-in surface">
+          <div>
+            <div className="eyebrow">MANUAL TRANSITION</div>
+            <strong>
+              {queuedSection ? "→ " + queuedSection.name : "COUNT-IN"}
+            </strong>
+          </div>
+          <div className="remote-count-number">
+            {studio.transport.countInBeat || "•"}
+            <span>/ {studio.transport.countInTotal}</span>
+          </div>
+          <small>Landing on beat 1</small>
+        </div>
+      )}
+
       <div className="performance-grid">
         <div className="current-card surface">
-          <div className="eyebrow">CURRENT SECTION</div>
+          <div className="eyebrow">CURRENT SECTION · AUTO</div>
           <div className="section-hero">{currentSection.name}</div>
           <div className="bar-readout">
             Bar {studio.transport.bar} · Beat {studio.transport.beat}
@@ -327,14 +356,21 @@ function Performance({
         </div>
 
         <div className="next-card surface">
-          <div className="eyebrow">NEXT SECTION</div>
-          <h2>{nextSection.name}</h2>
-          <p>{nextSection.lengthBars} bars</p>
+          <div className="eyebrow">
+            {queuedSection ? "QUEUED OVERRIDE" : "NEXT SECTION · AUTO"}
+          </div>
+          <h2>{queuedSection?.name ?? nextSection.name}</h2>
+          <p>
+            {queuedSection
+              ? "Count-in calculated from the current beat"
+              : nextSection.lengthBars + " bars"}
+          </p>
           <button
             className="queue-button"
+            disabled={countActive}
             onClick={() => command("section.launch", { id: nextSection.id })}
           >
-            Launch Section
+            Manual Jump
           </button>
         </div>
 
@@ -368,7 +404,11 @@ function Performance({
       </div>
 
       <div className="transport-console">
-        <button className="transport-key" onClick={() => command("transport.previous")}>
+        <button
+          className="transport-key"
+          disabled={countActive}
+          onClick={() => command("transport.previous")}
+        >
           <ChevronLeft size={24} />
           <span>PREV SECTION</span>
         </button>
@@ -378,8 +418,13 @@ function Performance({
           <span>STOP</span>
         </button>
 
-        <button className="go-button" onClick={() => command("transport.go")}>
+        <button
+          className="go-button"
+          disabled={countActive}
+          onClick={() => command("transport.go")}
+        >
           GO
+          <small>MANUAL OVERRIDE</small>
         </button>
 
         <button
@@ -392,10 +437,19 @@ function Performance({
           <span>{studio.transport.playing ? "PAUSE" : "PLAY"}</span>
         </button>
 
-        <button className="transport-key" onClick={() => command("transport.next")}>
+        <button
+          className="transport-key"
+          disabled={countActive}
+          onClick={() => command("transport.next")}
+        >
           <ChevronRight size={24} />
-          <span>NEXT SECTION</span>
+          <span>JUMP NEXT</span>
         </button>
+      </div>
+
+      <div className="auto-follow-banner">
+        Sections follow the Song automatically. Use GO or a section button only
+        to override the arrangement.
       </div>
 
       <QuickConsole studio={studio} command={command} />
