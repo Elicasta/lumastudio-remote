@@ -383,6 +383,7 @@ function Performance({
               <div className="next-song-meta">
                 <span>{nextSong.bpm} BPM</span>
                 <span>{nextSong.key}</span>
+                <span>{remoteCountInLabel(nextSong.countIn, nextSong.meter)}</span>
               </div>
               <button
                 className="next-song-button"
@@ -888,6 +889,21 @@ function ConnectSheet({
       </div>
     </div>
   );
+}
+
+function remoteCountInLabel(
+  countIn: StudioState["setlist"]["songs"][number]["countIn"],
+  meter: [number, number]
+) {
+  if (countIn.mode === "none") return "No Count";
+  if (countIn.mode === "bars") {
+    const bars = countIn.value ?? 1;
+    return bars + (bars === 1 ? " Bar Count" : " Bars Count");
+  }
+  if (countIn.mode === "beats") {
+    return (countIn.value ?? meter[0]) + " Beat Count";
+  }
+  return "Adaptive Count";
 }
 
 type CommandFn = (
