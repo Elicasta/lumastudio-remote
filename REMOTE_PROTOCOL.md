@@ -6,6 +6,12 @@ The remote mirrors the Studio product model:
 
 LumaRig Studio on the Mac remains authoritative. The remote never owns show state.
 
+## Compatibility
+
+The current control protocol is version **1**. Studio includes the protocol version
+in every canonical state broadcast. The remote refuses incompatible state instead
+of guessing at controls.
+
 ## Transport
 
 Supabase Realtime Broadcast carries live remote traffic.
