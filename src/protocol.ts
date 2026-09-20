@@ -108,6 +108,8 @@ export interface StudioState {
     countInActive: boolean;
     countInBeat: number;
     countInTotal: number;
+    countInBar: number;
+    countInBars: number;
     queuedSectionId: string | null;
   };
   pads: PadState[];
