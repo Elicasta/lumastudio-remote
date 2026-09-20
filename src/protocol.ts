@@ -58,6 +58,12 @@ export interface LightingSceneState {
   active: boolean;
 }
 
+export interface CountInSettings {
+  mode: "none" | "beats" | "bars" | "adaptive";
+  value?: number;
+  minBeats?: number;
+}
+
 export interface SetlistSongState {
   id: string;
   title: string;
@@ -67,6 +73,7 @@ export interface SetlistSongState {
   meter: [number, number];
   durationSeconds: number;
   status: "ready" | "needs-review" | "processing";
+  countIn: CountInSettings;
   current: boolean;
 }
 
