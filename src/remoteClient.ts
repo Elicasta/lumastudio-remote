@@ -185,7 +185,6 @@ export class RemoteClient {
         if (state.revision < this.latestRevision) return;
 
         this.latestRevision = state.revision;
-        this.studioPresent = true;
         this.clearStudioHandshakeTimer();
         this.events.onStatus("connected");
         this.events.onState(state);
@@ -210,9 +209,14 @@ export class RemoteClient {
 
         if (present && !this.studioPresent) {
           this.studioPresent = true;
-          this.events.onStatus("connecting");
           this.events.onError(null);
-          this.requestStudioState(channel);
+
+          if (this.latestRevision >= 0) {
+            this.events.onStatus("connected");
+          } else {
+            this.events.onStatus("connecting");
+            this.requestStudioState(channel);
+          }
           return;
         }
 
@@ -276,7 +280,7 @@ export class RemoteClient {
     });
 
     this.studioHandshakeTimer = window.setTimeout(() => {
-      if (this.latestRevision >= 0 && this.studioPresent) return;
+      if (this.latestRevision >= 0) return;
 
       this.events.onStatus("error");
       this.events.onError(
