@@ -1,4 +1,4 @@
-import type { SectionState, SetlistSongState, StudioState } from "./protocol";
+import { REMOTE_PROTOCOL_VERSION, type SectionState, type SetlistSongState, type StudioState } from "./protocol";
 
 const padColors = [
   "#fbbf24", "#60a5fa", "#f472b6", "#2dd4bf",
@@ -58,6 +58,7 @@ export const demoSetlistSongs: SetlistSongState[] = [
 ];
 
 export const demoState: StudioState = {
+  protocolVersion: REMOTE_PROTOCOL_VERSION,
   revision: 1,
   setlist: {
     id: "sunday-morning",
