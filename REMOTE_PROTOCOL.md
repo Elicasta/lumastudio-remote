@@ -8,30 +8,18 @@ LumaRig Studio on the Mac remains authoritative. The remote never owns show stat
 
 ## Transport
 
-The first transport is a Studio-hosted WebSocket:
+Supabase Realtime Broadcast carries live remote traffic.
 
-    ws://lumarig-studio.local:7070/remote
+Studio owns session creation. The companion receives a capability topic only after it exchanges the 6-digit Studio pairing code through the session Edge Function.
 
-A Supabase Realtime relay can be added as a network fallback without changing the command model.
+Realtime events:
 
-## Client hello
+- `studio_state`: Studio → remotes
+- `remote_command`: remote → Studio
+- `command_ack`: Studio → remote
+- `remote_hello`: remote → Studio, requesting the latest state
 
-Fields:
-
-- type: hello
-- clientName
-- clientVersion
-- pin
-
-## Studio messages
-
-The Studio can send:
-
-- welcome with sessionId and full state
-- state with the latest canonical state
-- ack with command id
-- error with optional command id
-- pong
+The Realtime channel is transport only. Studio remains authoritative and the musical clock stays local on the Mac.
 
 Every Studio state has a monotonically increasing revision. The remote ignores stale state revisions.
 
@@ -44,7 +32,7 @@ Fields:
 - command: command name
 - payload: command-specific data
 
-Studio returns ack or error with the same id.
+Studio broadcasts `command_ack` with the same id after accepting or rejecting a command.
 
 ## Performance semantics
 
@@ -114,8 +102,8 @@ Studio should reject remote commands when:
 
 STOP and blackout must execute in Studio. They must not depend on browser animation state.
 
-## Heartbeat
+## Session lifecycle
 
-Remote sends ping every five seconds. Studio responds with pong.
+Studio heartbeats the Supabase session from the Mac app. Pair codes expire separately from the longer-lived show session.
 
-If the connection closes, the remote retries with exponential backoff up to eight seconds.
+A remote can resume a still-valid paired session from its locally stored capability. When the Studio session expires, the remote must request a new 6-digit code from the Mac app.
