@@ -36,6 +36,8 @@ export class RemoteClient {
   private channel: RealtimeChannel | null = null;
   private latestRevision = -1;
   private closedByUser = false;
+  private studioHandshakeTimer: number | null = null;
+  private studioPresent = false;
   private pendingCommands = new Map<
     string,
     { timeout: number; reject: (message: string) => void }
@@ -70,6 +72,11 @@ export class RemoteClient {
 
   async disconnect() {
     this.closedByUser = true;
+
+    if (this.studioHandshakeTimer !== null) {
+      window.clearTimeout(this.studioHandshakeTimer);
+      this.studioHandshakeTimer = null;
+    }
 
     for (const pending of this.pendingCommands.values()) {
       window.clearTimeout(pending.timeout);
@@ -178,6 +185,9 @@ export class RemoteClient {
         if (state.revision < this.latestRevision) return;
 
         this.latestRevision = state.revision;
+        this.studioPresent = true;
+        this.clearStudioHandshakeTimer();
+        this.events.onStatus("connected");
         this.events.onState(state);
         this.events.onError(null);
       })
@@ -194,6 +204,23 @@ export class RemoteClient {
         if (!ack.ok) {
           pending.reject(ack.error ?? "Studio rejected the command.");
         }
+      })
+      .on("presence", { event: "sync" }, () => {
+        const present = hasStudioPresence(channel.presenceState());
+
+        if (present && !this.studioPresent) {
+          this.studioPresent = true;
+          this.events.onStatus("connecting");
+          this.events.onError(null);
+          this.requestStudioState(channel);
+          return;
+        }
+
+        if (!present && this.studioPresent) {
+          this.studioPresent = false;
+          this.events.onStatus("disconnected");
+          this.events.onError("Studio left this remote session.");
+        }
       });
 
     this.channel = channel;
@@ -204,7 +231,7 @@ export class RemoteClient {
       channel.subscribe((status, error) => {
         if (status === "SUBSCRIBED") {
           settled = true;
-          this.events.onStatus("connected");
+          this.events.onStatus("connecting");
 
           void channel.track({
             type: "remote",
@@ -212,15 +239,7 @@ export class RemoteClient {
             connectedAt: new Date().toISOString()
           });
 
-          void channel.send({
-            type: "broadcast",
-            event: "remote_hello",
-            payload: {
-              clientName: deviceName(),
-              clientVersion: "0.2.0"
-            }
-          });
-
+          this.requestStudioState(channel);
           resolve();
           return;
         }
@@ -242,6 +261,34 @@ export class RemoteClient {
         }
       });
     });
+  }
+
+  private requestStudioState(channel: RealtimeChannel) {
+    this.clearStudioHandshakeTimer();
+
+    void channel.send({
+      type: "broadcast",
+      event: "remote_hello",
+      payload: {
+        clientName: deviceName(),
+        clientVersion: "0.2.0"
+      }
+    });
+
+    this.studioHandshakeTimer = window.setTimeout(() => {
+      if (this.latestRevision >= 0 && this.studioPresent) return;
+
+      this.events.onStatus("error");
+      this.events.onError(
+        "Supabase is reachable, but LumaRig Studio did not answer this session. Generate a new pair code on the Mac."
+      );
+    }, 5000);
+  }
+
+  private clearStudioHandshakeTimer() {
+    if (this.studioHandshakeTimer === null) return;
+    window.clearTimeout(this.studioHandshakeTimer);
+    this.studioHandshakeTimer = null;
   }
 }
 
@@ -316,4 +363,13 @@ function getRemoteInstanceId() {
 
   localStorage.setItem(key, "remote-" + id);
   return "remote-" + id;
+}
+
+
+export function hasStudioPresence(
+  state: Record<string, Array<Record<string, unknown>>>
+) {
+  return Object.values(state).some((presences) =>
+    presences.some((presence) => presence.type === "studio")
+  );
 }
