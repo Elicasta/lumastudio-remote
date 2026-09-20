@@ -287,6 +287,7 @@ function Performance({
     songIndex >= 0 && songIndex < studio.setlist.songs.length - 1
       ? studio.setlist.songs[songIndex + 1]
       : null;
+  const transitionActive = studio.transport.transitionActive;
   const countActive = studio.transport.countInActive;
   const queuedSection = studio.transport.queuedSectionId
     ? studio.sections.find(
@@ -310,7 +311,7 @@ function Performance({
                     : "section-chip"
             }
             onClick={() => command("section.launch", { id: section.id })}
-            disabled={countActive}
+            disabled={transitionActive}
           >
             <small>{section.startBar}</small>
             <strong>{section.name}</strong>
@@ -323,7 +324,7 @@ function Performance({
         ))}
       </div>
 
-      {countActive && (
+      {transitionActive && (
         <div className="remote-count-in surface">
           <div>
             <div className="eyebrow">MANUAL TRANSITION</div>
@@ -332,10 +333,16 @@ function Performance({
             </strong>
           </div>
           <div className="remote-count-number">
-            {studio.transport.countInBeat || "•"}
-            <span>/ {studio.transport.countInTotal}</span>
+            {countActive ? studio.transport.countInBeat || "•" : "→"}
+            <span>
+              {countActive
+                ? "/ " + studio.transport.countInTotal
+                : " quantized"}
+            </span>
           </div>
-          <small>Landing on beat 1</small>
+          <small>
+            {countActive ? "Landing on beat 1" : "No count · beat-quantized jump"}
+          </small>
         </div>
       )}
 
@@ -367,7 +374,7 @@ function Performance({
           </p>
           <button
             className="queue-button"
-            disabled={countActive}
+            disabled={transitionActive}
             onClick={() => command("section.launch", { id: nextSection.id })}
           >
             Manual Jump
@@ -407,7 +414,7 @@ function Performance({
       <div className="transport-console">
         <button
           className="transport-key"
-          disabled={countActive}
+          disabled={transitionActive}
           onClick={() => command("transport.previous")}
         >
           <ChevronLeft size={24} />
@@ -421,7 +428,7 @@ function Performance({
 
         <button
           className="go-button"
-          disabled={countActive}
+          disabled={transitionActive}
           onClick={() => command("transport.go")}
         >
           GO
@@ -432,18 +439,20 @@ function Performance({
           className="transport-key"
           onClick={() =>
             command(
-              studio.transport.playing || studio.transport.countInActive
+              studio.transport.playing || studio.transport.transitionActive
                 ? "transport.pause"
                 : "transport.play"
             )
           }
         >
-          {studio.transport.playing || studio.transport.countInActive
+          {studio.transport.playing || studio.transport.transitionActive
             ? <Pause size={23} />
             : <Play size={23} />}
           <span>
-            {studio.transport.countInActive
-              ? "CANCEL COUNT"
+            {studio.transport.transitionActive
+              ? studio.transport.countInActive
+                ? "CANCEL COUNT"
+                : "CANCEL JUMP"
               : studio.transport.playing
                 ? "PAUSE"
                 : "PLAY"}
@@ -452,7 +461,7 @@ function Performance({
 
         <button
           className="transport-key"
-          disabled={countActive}
+          disabled={transitionActive}
           onClick={() => command("transport.next")}
         >
           <ChevronRight size={24} />
