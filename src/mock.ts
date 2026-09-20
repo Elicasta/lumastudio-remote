@@ -43,6 +43,7 @@ const song = (
   meter: [4, 4],
   durationSeconds,
   status: "ready",
+  countIn: { mode: "bars", value: 1 },
   current
 });
 
