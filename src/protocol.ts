@@ -1,22 +1,29 @@
-export type RemoteCommand =
-  | "transport.play"
-  | "transport.pause"
-  | "transport.stop"
-  | "transport.go"
-  | "transport.previous"
-  | "transport.next"
-  | "section.launch"
-  | "song.next"
-  | "song.previous"
-  | "song.select"
-  | "pad.trigger"
-  | "pad.release"
-  | "mixer.gain"
-  | "mixer.mute"
-  | "mixer.solo"
-  | "lighting.blackout"
-  | "lighting.scene"
-  | "lighting.xy";
+export const REMOTE_COMMANDS = [
+  "transport.play",
+  "transport.pause",
+  "transport.stop",
+  "transport.go",
+  "transport.previous",
+  "transport.next",
+  "section.launch",
+  "song.next",
+  "song.previous",
+  "song.select",
+  "pad.trigger",
+  "pad.release",
+  "mixer.gain",
+  "mixer.mute",
+  "mixer.solo",
+  "lighting.blackout",
+  "lighting.scene",
+  "lighting.xy"
+] as const;
+
+export type RemoteCommand = (typeof REMOTE_COMMANDS)[number];
+
+export function isRemoteCommand(value: unknown): value is RemoteCommand {
+  return REMOTE_COMMANDS.includes(value as RemoteCommand);
+}
 
 export interface SectionState {
   id: string;
@@ -102,35 +109,4 @@ export interface StudioState {
     lighting: boolean;
     remote: boolean;
   };
-}
-
-export type ClientMessage =
-  | {
-      type: "hello";
-      clientName: string;
-      clientVersion: string;
-      pin?: string;
-    }
-  | {
-      type: "command";
-      id: string;
-      command: RemoteCommand;
-      payload?: Record<string, unknown>;
-    }
-  | {
-      type: "ping";
-      at: number;
-    };
-
-export type ServerMessage =
-  | { type: "welcome"; sessionId: string; state: StudioState }
-  | { type: "state"; state: StudioState }
-  | { type: "ack"; id: string }
-  | { type: "error"; id?: string; message: string }
-  | { type: "pong"; at: number };
-
-export function isServerMessage(value: unknown): value is ServerMessage {
-  if (!value || typeof value !== "object") return false;
-  const type = (value as { type?: unknown }).type;
-  return ["welcome", "state", "ack", "error", "pong"].includes(String(type));
 }
