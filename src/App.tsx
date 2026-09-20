@@ -278,6 +278,13 @@ function Performance({
     studio.transport.durationSeconds > 0
       ? studio.transport.positionSeconds / studio.transport.durationSeconds
       : 0;
+  const songIndex = studio.setlist.songs.findIndex(
+    (song) => song.id === studio.song.id
+  );
+  const nextSong =
+    songIndex >= 0 && songIndex < studio.setlist.songs.length - 1
+      ? studio.setlist.songs[songIndex + 1]
+      : null;
 
   return (
     <section className="performance-screen">
@@ -318,30 +325,50 @@ function Performance({
         </div>
 
         <div className="next-card surface">
-          <div className="eyebrow">UP NEXT</div>
+          <div className="eyebrow">NEXT SECTION</div>
           <h2>{nextSection.name}</h2>
           <p>{nextSection.lengthBars} bars</p>
           <button
             className="queue-button"
             onClick={() => command("section.launch", { id: nextSection.id })}
           >
-            Launch Now
+            Launch Section
           </button>
         </div>
 
-        <div className="system-card surface">
-          <div className="eyebrow">SHOW STATUS</div>
-          <StatusRow label="Audio Engine" ok={studio.health.audio} />
-          <StatusRow label="MIDI Clock" ok={studio.health.midi} />
-          <StatusRow label="LumaRig Lighting" ok={studio.health.lighting} />
-          <StatusRow label="Remote Link" ok={studio.health.remote} />
+        <div className="song-next-card surface">
+          <div className="eyebrow">NEXT SONG</div>
+          {nextSong ? (
+            <>
+              <h2>{nextSong.title}</h2>
+              <p>{nextSong.artist}</p>
+              <div className="next-song-meta">
+                <span>{nextSong.bpm} BPM</span>
+                <span>{nextSong.key}</span>
+              </div>
+              <button
+                className="next-song-button"
+                onClick={() => command("song.next")}
+              >
+                NEXT SONG <ChevronRight size={18} />
+              </button>
+            </>
+          ) : (
+            <>
+              <h2>End of Set</h2>
+              <p>No song is queued after this one.</p>
+              <button className="next-song-button" disabled>
+                END OF SET
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       <div className="transport-console">
         <button className="transport-key" onClick={() => command("transport.previous")}>
           <ChevronLeft size={24} />
-          <span>PREV</span>
+          <span>PREV SECTION</span>
         </button>
 
         <button className="transport-key stop" onClick={() => command("transport.stop")}>
@@ -365,7 +392,7 @@ function Performance({
 
         <button className="transport-key" onClick={() => command("transport.next")}>
           <ChevronRight size={24} />
-          <span>NEXT</span>
+          <span>NEXT SECTION</span>
         </button>
       </div>
 
@@ -669,13 +696,16 @@ function XYPad({
 function Setlist({ studio, command }: { studio: StudioState; command: CommandFn }) {
   return (
     <section className="page-screen">
-      <PageTitle title={studio.setlistName} subtitle={studio.setlist.length + " songs · show order"} />
+      <PageTitle
+        title={studio.setlist.name}
+        subtitle={studio.setlist.songs.length + " songs · show order"}
+      />
       <div className="setlist-list surface">
-        {studio.setlist.map((song, index) => (
+        {studio.setlist.songs.map((song, index) => (
           <button
             key={song.id}
             className={song.current ? "setlist-row current" : "setlist-row"}
-            onClick={() => command("setlist.song", { id: song.id })}
+            onClick={() => command("song.select", { id: song.id })}
           >
             <span className="setlist-number">{index + 1}</span>
             <div>
@@ -684,8 +714,8 @@ function Setlist({ studio, command }: { studio: StudioState; command: CommandFn 
             </div>
             <span>{song.bpm} BPM</span>
             <span>{song.key}</span>
-            <span className={song.ready ? "ready-chip" : "warning-chip"}>
-              {song.ready ? "READY" : "CHECK"}
+            <span className={song.status === "ready" ? "ready-chip" : "warning-chip"}>
+              {song.status === "ready" ? "READY" : "CHECK"}
             </span>
           </button>
         ))}
