@@ -83,6 +83,7 @@ export const demoState: StudioState = {
     durationSeconds: 318,
     bar: 61,
     beat: 3,
+    transitionActive: false,
     countInActive: false,
     countInBeat: 0,
     countInTotal: 0,
