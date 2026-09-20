@@ -10,7 +10,19 @@ The remote follows the same model as the Mac app:
 
 **Setlist → Song Arrangement → Performance**
 
-The Mac owns canonical state. The remote sends operator commands and renders the state Studio returns.
+The Mac app owns the remote session and canonical show state. The remote is only a control surface.
+
+## Pairing flow
+
+1. Open **Devices → Remote Control** in LumaRig Studio on the Mac.
+2. Studio creates the Supabase Realtime session and displays a 6-digit pairing code.
+3. Open the remote on iPad or iPhone.
+4. Enter that code.
+5. The remote joins the Studio-created session and receives canonical show state.
+
+The companion never creates the Studio session.
+
+The browser stores the paired session capability locally so reopening the PWA can resume until the Studio session expires.
 
 ## Current controls
 
@@ -28,9 +40,8 @@ The Mac owns canonical state. The remote sends operator commands and renders the
 - lighting scene surface
 - moving-head XY surface
 - blackout
-- reconnecting WebSocket client
-- heartbeat
-- command IDs
+- Supabase Realtime command relay
+- command acknowledgement + timeout
 - stale-state rejection
 - demo mode
 - PWA manifest + service worker
@@ -39,15 +50,15 @@ The Mac owns canonical state. The remote sends operator commands and renders the
 
 ## GO versus NEXT SONG
 
-These are deliberately not the same action.
+These are deliberately different actions.
 
 **GO** advances to the next Section inside the current Song.
 
-**NEXT SONG** stops the current Song, loads the next Song in the Setlist, resets to its first Section, and does not wrap at the end of the Setlist.
+**NEXT SONG** asks Studio to stop the current Song, load the next Song in the Setlist, reset to its first Section, and leave the Setlist at the end instead of wrapping.
 
 ## Studio parity
 
-The demo data mirrors the current Mac branch build/v0.2-audio-engine:
+The demo data mirrors the Mac `build/v0.2-audio-engine` branch:
 
 - Sunday Morning
 - 8 Songs
@@ -56,45 +67,28 @@ The demo data mirrors the current Mac branch build/v0.2-audio-engine:
 - the same 12 Pad names
 - audio mixer channels mapped to Click, Guide, Drums, Bass, Keys, Guitar, Vocals and Other
 
-MIDI and lighting health are not presented as live in demo state until the Mac runtime actually provides those engines.
+MIDI and lighting are not presented as live until the Mac runtime actually provides those engines.
 
-## Run locally
+## Development
 
     npm install
     npm run dev
-
-Vite listens on port 4177 and accepts LAN connections.
-
-Open this from an iPad or iPhone on the same Wi-Fi network:
-
-    http://YOUR-MAC-IP:4177
-
-The default Studio WebSocket target is:
-
-    ws://lumarig-studio.local:7070/remote
-
-Until the Mac app exposes that endpoint, tap **Open Demo Console**.
 
 ## Build
 
     npm test
     npm run build
 
-The static bundle is written to dist/.
+The static bundle is written to `dist/`.
+
+## Production
+
+The Vercel project is connected to this repository and deploys `main`.
+
+Production URL:
+
+    https://lumastudio-remote.vercel.app
 
 ## Protocol
 
-See REMOTE_PROTOCOL.md.
-
-## Studio-side work
-
-Studio still needs the live remote bridge that:
-
-1. exposes canonical Setlist, Song, Section, transport and Track state
-2. accepts the v0.2 remote commands
-3. authenticates pairing
-4. validates command targets
-5. ACKs accepted commands
-6. rejects stale or invalid commands
-7. broadcasts state after every accepted show mutation
-8. keeps native audio state authoritative on the Mac
+See `REMOTE_PROTOCOL.md`.
