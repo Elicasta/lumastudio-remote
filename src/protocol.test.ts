@@ -7,7 +7,7 @@ import {
 
 describe("remote protocol", () => {
   it("has an explicit compatibility version", () => {
-    expect(REMOTE_PROTOCOL_VERSION).toBe(1);
+    expect(REMOTE_PROTOCOL_VERSION).toBe(2);
   });
 
   it("keeps the supported command contract explicit", () => {
