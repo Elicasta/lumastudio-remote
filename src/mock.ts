@@ -81,7 +81,11 @@ export const demoState: StudioState = {
     positionSeconds: 194,
     durationSeconds: 318,
     bar: 61,
-    beat: 3
+    beat: 3,
+    countInActive: false,
+    countInBeat: 0,
+    countInTotal: 0,
+    queuedSectionId: null
   },
   pads: Array.from({ length: 12 }, (_, index) => ({
     id: "pad-" + (index + 1),
