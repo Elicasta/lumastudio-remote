@@ -23,7 +23,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent
 } from "react";
-import { RemoteClient, type ConnectionStatus } from "./remoteClient";
+import { RemoteClient, loadSavedSession, type ConnectionStatus } from "./remoteClient";
 import { initialState, reducer, type View } from "./store";
 import type { RemoteCommand, StudioState } from "./protocol";
 
@@ -40,11 +40,7 @@ export function App() {
   const [connection, setConnection] = useState<ConnectionStatus>("idle");
   const [connectOpen, setConnectOpen] = useState(true);
   const [demoMode, setDemoMode] = useState(false);
-  const [serverUrl, setServerUrl] = useState(
-    localStorage.getItem("lumarig.remote.url") ??
-      "ws://lumarig-studio.local:7070/remote"
-  );
-  const [pin, setPin] = useState(localStorage.getItem("lumarig.remote.pin") ?? "");
+  const [pairCode, setPairCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const clientRef = useRef<RemoteClient | null>(null);
 
@@ -58,13 +54,11 @@ export function App() {
     return () => document.removeEventListener("contextmenu", block);
   }, []);
 
-  function connect() {
-    clientRef.current?.disconnect();
+  function connect(code = pairCode) {
+    void clientRef.current?.disconnect();
     setError(null);
-    localStorage.setItem("lumarig.remote.url", serverUrl);
-    localStorage.setItem("lumarig.remote.pin", pin);
 
-    const client = new RemoteClient(serverUrl, pin, {
+    const client = new RemoteClient(code, {
       onStatus: setConnection,
       onState: (studio) => {
         setDemoMode(false);
@@ -75,11 +69,21 @@ export function App() {
     });
 
     clientRef.current = client;
-    client.connect();
+    void client.connect();
   }
 
+  useEffect(() => {
+    if (loadSavedSession()) {
+      connect("");
+    }
+
+    return () => {
+      void clientRef.current?.disconnect();
+    };
+  }, []);
+
   function demo() {
-    clientRef.current?.disconnect();
+    void clientRef.current?.disconnect();
     setConnection("connected");
     setDemoMode(true);
     setError(null);
@@ -139,13 +143,11 @@ export function App() {
 
       {connectOpen && (
         <ConnectSheet
-          serverUrl={serverUrl}
-          pin={pin}
+          pairCode={pairCode}
           connection={connection}
           error={error}
-          onUrl={setServerUrl}
-          onPin={setPin}
-          onConnect={connect}
+          onPairCode={setPairCode}
+          onConnect={() => connect()}
           onDemo={demo}
           onClose={() => connection === "connected" && setConnectOpen(false)}
         />
@@ -740,26 +742,24 @@ function PageTitle({ title, subtitle }: { title: string; subtitle: string }) {
 }
 
 function ConnectSheet({
-  serverUrl,
-  pin,
+  pairCode,
   connection,
   error,
-  onUrl,
-  onPin,
+  onPairCode,
   onConnect,
   onDemo,
   onClose
 }: {
-  serverUrl: string;
-  pin: string;
+  pairCode: string;
   connection: ConnectionStatus;
   error: string | null;
-  onUrl: (value: string) => void;
-  onPin: (value: string) => void;
+  onPairCode: (value: string) => void;
   onConnect: () => void;
   onDemo: () => void;
   onClose: () => void;
 }) {
+  const busy = connection === "pairing" || connection === "connecting";
+
   return (
     <div className="connect-backdrop">
       <div className="connect-sheet surface">
@@ -768,34 +768,24 @@ function ConnectSheet({
         </div>
         <div className="connect-copy">
           <small>LUMARIG STUDIO</small>
-          <h1>Connect Remote</h1>
+          <h1>Pair Remote</h1>
           <p>
-            Put the iPad or iPhone on the same network as the Studio Mac, then
-            connect to its Remote endpoint.
+            On the Mac, open Devices → Remote Control. Enter the 6-digit code
+            created by LumaRig Studio. The Mac owns the session and show state.
           </p>
         </div>
 
         <label>
-          <span>Studio address</span>
-          <input
-            value={serverUrl}
-            onChange={(event) => onUrl(event.currentTarget.value)}
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-          />
-        </label>
-
-        <label>
-          <span>Pairing PIN</span>
+          <span>Studio Pair Code</span>
           <input
             className="pin-input"
-            value={pin}
+            value={pairCode}
             inputMode="numeric"
             maxLength={6}
             placeholder="000000"
+            autoComplete="one-time-code"
             onChange={(event) =>
-              onPin(event.currentTarget.value.replace(/\D/g, "").slice(0, 6))
+              onPairCode(event.currentTarget.value.replace(/\D/g, "").slice(0, 6))
             }
           />
         </label>
@@ -805,10 +795,14 @@ function ConnectSheet({
         <button
           className="connect-primary"
           onClick={onConnect}
-          disabled={connection === "connecting"}
+          disabled={busy || pairCode.length !== 6}
         >
           <Wifi size={18} />
-          {connection === "connecting" ? "Connecting…" : "Connect to Studio"}
+          {connection === "pairing"
+            ? "Pairing…"
+            : connection === "connecting"
+              ? "Joining Studio…"
+              : "Pair with Studio"}
         </button>
 
         <button className="demo-button" onClick={onDemo}>
@@ -823,7 +817,7 @@ function ConnectSheet({
 
         <div className="connect-foot">
           <Settings2 size={13} />
-          Saved only on this device
+          Pairing session is created by the Mac app
         </div>
       </div>
     </div>
