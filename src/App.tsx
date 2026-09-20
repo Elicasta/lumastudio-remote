@@ -336,7 +336,14 @@ function Performance({
             {countActive ? studio.transport.countInBeat || "•" : "→"}
             <span>
               {countActive
-                ? "/ " + studio.transport.countInTotal
+                ? "/ " +
+                  studio.transport.countInTotal +
+                  (studio.transport.countInBars > 1
+                    ? " · bar " +
+                      studio.transport.countInBar +
+                      "/" +
+                      studio.transport.countInBars
+                    : "")
                 : " quantized"}
             </span>
           </div>
