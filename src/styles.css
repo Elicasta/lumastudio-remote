@@ -278,6 +278,7 @@ button:active {
 
 .current-card,
 .next-card,
+.song-next-card,
 .system-card {
   padding: 18px;
   min-height: 170px;
@@ -323,14 +324,63 @@ button:active {
   margin-top: 6px;
 }
 
-.next-card h2 {
+.next-card h2,
+.song-next-card h2 {
   font-size: clamp(20px, 2.6vw, 34px);
   margin: 13px 0 3px;
 }
 
-.next-card p {
+.next-card p,
+.song-next-card p {
   color: #7f94a1;
   font-size: 10px;
+}
+
+.song-next-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.song-next-card h2 {
+  line-height: 1.04;
+}
+
+.next-song-meta {
+  display: flex;
+  gap: 7px;
+  margin-top: 8px;
+}
+
+.next-song-meta span {
+  padding: 5px 7px;
+  border-radius: 7px;
+  border: 1px solid #253a48;
+  background: #0a161f;
+  color: #8197a4;
+  font-size: 7px;
+  letter-spacing: .04em;
+}
+
+.next-song-button {
+  margin-top: auto;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-color: #356da8;
+  background: linear-gradient(180deg, #16385a, #102942);
+  color: #b8d8f8;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+
+.next-song-button:disabled {
+  border-color: #293946;
+  background: #0d1821;
+  color: #4f6674;
+  cursor: default;
 }
 
 .queue-button {
@@ -597,7 +647,7 @@ button:active {
 .console-channels {
   min-height: calc(100dvh - 160px);
   display: grid;
-  grid-template-columns: repeat(6, minmax(100px, 1fr));
+  grid-template-columns: repeat(8, minmax(82px, 1fr));
   gap: 9px;
 }
 
@@ -949,7 +999,7 @@ button:active {
   }
 
   .performance-grid {
-    grid-template-columns: 1fr 110px;
+    grid-template-columns: minmax(0, 1fr) 110px;
   }
 
   .current-card {
@@ -967,6 +1017,47 @@ button:active {
   }
 
   .next-card h2 { font-size: 16px; }
+
+  .song-next-card {
+    grid-column: 1 / -1;
+    min-height: 108px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto 1fr auto;
+    column-gap: 12px;
+    padding: 12px 14px;
+  }
+
+  .song-next-card .eyebrow {
+    grid-column: 1 / -1;
+  }
+
+  .song-next-card h2 {
+    font-size: 17px;
+    align-self: end;
+    margin: 7px 0 0;
+  }
+
+  .song-next-card p {
+    margin: 2px 0 0;
+  }
+
+  .song-next-card .next-song-meta {
+    align-self: center;
+    justify-self: end;
+    grid-column: 2;
+    grid-row: 2;
+    margin: 0;
+  }
+
+  .song-next-card .next-song-button {
+    grid-column: 2;
+    grid-row: 3;
+    min-width: 118px;
+    min-height: 34px;
+    margin-top: 4px;
+  }
+
   .system-card { display: none; }
 
   .transport-console {
@@ -1001,7 +1092,7 @@ button:active {
   }
 
   .console-channels {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 7px;
   }
 
@@ -1047,9 +1138,23 @@ button:active {
   .rail-tab { min-height: 52px; }
   .remote-main { padding: 10px; }
   .section-chip { height: 47px; }
-  .current-card, .next-card, .system-card { min-height: 130px; padding: 13px; }
+  .current-card, .next-card, .song-next-card, .system-card { min-height: 130px; padding: 13px; }
   .section-hero { font-size: 34px; margin-top: 8px; }
   .transport-console { height: 62px; }
   .quick-console { min-height: 128px; }
   .xy-pad { min-height: 86px; }
+}
+
+@media (max-width: 620px) {
+  .console-channels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .song-next-card {
+    grid-template-columns: 1fr auto;
+  }
+
+  .song-next-card .next-song-meta {
+    display: none;
+  }
 }
