@@ -1,4 +1,4 @@
-# LumaRig Remote Protocol v0.2
+# LumaRig Remote Protocol v2
 
 The remote mirrors the Studio product model:
 
@@ -8,7 +8,7 @@ LumaRig Studio on the Mac remains authoritative. The remote never owns show stat
 
 ## Compatibility
 
-The current control protocol is version **1**. Studio includes the protocol version
+The current control protocol is version **2**. Studio includes the protocol version
 in every canonical state broadcast. The remote refuses incompatible state instead
 of guessing at controls.
 
@@ -40,6 +40,26 @@ Fields:
 
 Studio broadcasts `command_ack` with the same id after accepting or rejecting a command.
 
+## Automatic sections and manual overrides
+
+Normal playback follows the Song timeline automatically. Studio derives the
+current Section from the native transport position; the operator does not need
+to launch Verse, Chorus, Bridge, or other mapped Sections during normal playback.
+
+Section buttons and GO are manual overrides. When one is used during playback,
+Studio calculates a musical transition from the current beat, produces the
+configured count-in, keeps the existing Section playing during the preparation
+window, and lands the requested Section exactly on beat 1.
+
+The canonical transport state includes:
+
+- `countInActive`
+- `countInBeat`
+- `countInTotal`
+- `queuedSectionId`
+
+The companion renders those values but does not calculate the transition itself.
+
 ## Performance semantics
 
 These controls are intentionally separate.
@@ -51,7 +71,7 @@ These controls are intentionally separate.
 - transport.next
 - section.launch with payload id
 
-**GO advances the current Song to its next Section. It never changes Songs.**
+**GO manually overrides the automatic timeline and jumps toward the next Section. It never changes Songs.**
 
 transport.previous and transport.next are also Section controls.
 
