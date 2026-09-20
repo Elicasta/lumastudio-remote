@@ -1,3 +1,5 @@
+export const REMOTE_PROTOCOL_VERSION = 1 as const;
+
 export const REMOTE_COMMANDS = [
   "transport.play",
   "transport.pause",
@@ -75,6 +77,7 @@ export interface SetlistState {
 }
 
 export interface StudioState {
+  protocolVersion: typeof REMOTE_PROTOCOL_VERSION;
   revision: number;
   setlist: SetlistState;
   song: {
