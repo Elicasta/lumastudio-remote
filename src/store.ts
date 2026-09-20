@@ -1,5 +1,5 @@
-import type { RemoteCommand, StudioState } from "./protocol";
-import { demoState } from "./mock";
+import type { RemoteCommand, SetlistSongState, StudioState } from "./protocol";
+import { demoState, sectionsForSong } from "./mock";
 
 export type View = "performance" | "pads" | "mixer" | "lighting" | "setlist";
 
@@ -38,26 +38,33 @@ export function reducer(state: AppState, action: AppAction): AppState {
       break;
     case "transport.next":
     case "transport.go":
-      studio.currentSectionIndex = Math.min(
-        studio.sections.length - 1,
-        studio.currentSectionIndex + 1
-      );
-      studio.queuedSectionIndex = Math.min(
-        studio.sections.length - 1,
-        studio.currentSectionIndex + 1
-      );
+      moveSection(studio, 1);
       break;
     case "transport.previous":
-      studio.currentSectionIndex = Math.max(0, studio.currentSectionIndex - 1);
-      studio.queuedSectionIndex = Math.min(
-        studio.sections.length - 1,
-        studio.currentSectionIndex + 1
-      );
+      moveSection(studio, -1);
       break;
     case "section.launch": {
       const id = String(action.payload?.id ?? "");
       const index = studio.sections.findIndex((section) => section.id === id);
-      if (index >= 0) studio.currentSectionIndex = index;
+      if (index >= 0) {
+        studio.currentSectionIndex = index;
+        studio.queuedSectionIndex =
+          index < studio.sections.length - 1 ? index + 1 : null;
+        studio.transport.bar = studio.sections[index].startBar;
+        studio.transport.beat = 1;
+      }
+      break;
+    }
+    case "song.next":
+      moveSong(studio, 1);
+      break;
+    case "song.previous":
+      moveSong(studio, -1);
+      break;
+    case "song.select": {
+      const id = String(action.payload?.id ?? "");
+      const selected = studio.setlist.songs.find((song) => song.id === id);
+      if (selected) loadSong(studio, selected);
       break;
     }
     case "pad.trigger": {
@@ -104,26 +111,57 @@ export function reducer(state: AppState, action: AppAction): AppState {
       studio.lighting.x = Number(action.payload?.x ?? studio.lighting.x);
       studio.lighting.y = Number(action.payload?.y ?? studio.lighting.y);
       break;
-    case "setlist.song": {
-      const id = String(action.payload?.id ?? "");
-      const selected = studio.setlist.find((song) => song.id === id);
-      if (selected) {
-        studio.setlist.forEach((song) => {
-          song.current = song.id === id;
-        });
-        studio.song.id = selected.id;
-        studio.song.title = selected.title;
-        studio.song.artist = selected.artist;
-        studio.song.bpm = selected.bpm;
-        studio.song.key = selected.key;
-        studio.currentSectionIndex = 0;
-        studio.queuedSectionIndex = studio.sections.length > 1 ? 1 : null;
-        studio.transport.positionSeconds = 0;
-      }
-      break;
-    }
   }
 
   studio.revision += 1;
   return { ...state, studio, demo: true };
+}
+
+function moveSection(studio: StudioState, delta: -1 | 1) {
+  if (studio.sections.length === 0) return;
+
+  const nextIndex = Math.max(
+    0,
+    Math.min(studio.sections.length - 1, studio.currentSectionIndex + delta)
+  );
+
+  studio.currentSectionIndex = nextIndex;
+  studio.queuedSectionIndex =
+    nextIndex < studio.sections.length - 1 ? nextIndex + 1 : null;
+  studio.transport.bar = studio.sections[nextIndex].startBar;
+  studio.transport.beat = 1;
+}
+
+function moveSong(studio: StudioState, delta: -1 | 1) {
+  const songs = studio.setlist.songs;
+  const currentIndex = songs.findIndex((song) => song.id === studio.song.id);
+  if (currentIndex < 0) return;
+
+  const nextIndex = currentIndex + delta;
+  if (nextIndex < 0 || nextIndex >= songs.length) return;
+
+  loadSong(studio, songs[nextIndex]);
+}
+
+function loadSong(studio: StudioState, selected: SetlistSongState) {
+  studio.setlist.songs.forEach((song) => {
+    song.current = song.id === selected.id;
+  });
+
+  studio.song = {
+    id: selected.id,
+    title: selected.title,
+    artist: selected.artist,
+    bpm: selected.bpm,
+    key: selected.key,
+    meter: selected.meter
+  };
+  studio.sections = sectionsForSong(selected.id);
+  studio.currentSectionIndex = 0;
+  studio.queuedSectionIndex = studio.sections.length > 1 ? 1 : null;
+  studio.transport.positionSeconds = 0;
+  studio.transport.durationSeconds = selected.durationSeconds;
+  studio.transport.bar = studio.sections[0]?.startBar ?? 1;
+  studio.transport.beat = 1;
+  studio.transport.playing = false;
 }
