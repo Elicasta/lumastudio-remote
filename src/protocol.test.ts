@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { isRemoteCommand, REMOTE_COMMANDS } from "./protocol";
+import {
+  isRemoteCommand,
+  REMOTE_COMMANDS,
+  REMOTE_PROTOCOL_VERSION
+} from "./protocol";
 
 describe("remote protocol", () => {
+  it("has an explicit compatibility version", () => {
+    expect(REMOTE_PROTOCOL_VERSION).toBe(1);
+  });
+
   it("keeps the supported command contract explicit", () => {
     expect(REMOTE_COMMANDS).toContain("transport.go");
     expect(REMOTE_COMMANDS).toContain("song.next");
