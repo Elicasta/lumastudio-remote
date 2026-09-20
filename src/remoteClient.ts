@@ -1,5 +1,9 @@
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import type { RemoteCommand, StudioState } from "./protocol";
+import {
+  REMOTE_PROTOCOL_VERSION,
+  type RemoteCommand,
+  type StudioState
+} from "./protocol";
 import { supabase } from "./supabase";
 
 export type ConnectionStatus =
@@ -182,6 +186,16 @@ export class RemoteClient {
       .on("broadcast", { event: "studio_state" }, ({ payload }) => {
         const state = payload as StudioState;
         if (!state || typeof state.revision !== "number") return;
+
+        if (state.protocolVersion !== REMOTE_PROTOCOL_VERSION) {
+          this.clearStudioHandshakeTimer();
+          this.events.onStatus("error");
+          this.events.onError(
+            "This remote and LumaRig Studio use different control protocol versions. Update the older app before pairing."
+          );
+          return;
+        }
+
         if (state.revision < this.latestRevision) return;
 
         this.latestRevision = state.revision;
