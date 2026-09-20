@@ -6,6 +6,9 @@ export type RemoteCommand =
   | "transport.previous"
   | "transport.next"
   | "section.launch"
+  | "song.next"
+  | "song.previous"
+  | "song.select"
   | "pad.trigger"
   | "pad.release"
   | "mixer.gain"
@@ -13,8 +16,7 @@ export type RemoteCommand =
   | "mixer.solo"
   | "lighting.blackout"
   | "lighting.scene"
-  | "lighting.xy"
-  | "setlist.song";
+  | "lighting.xy";
 
 export interface SectionState {
   id: string;
@@ -53,13 +55,21 @@ export interface SetlistSongState {
   artist: string;
   bpm: number;
   key: string;
-  ready: boolean;
+  meter: [number, number];
+  durationSeconds: number;
+  status: "ready" | "needs-review" | "processing";
   current: boolean;
+}
+
+export interface SetlistState {
+  id: string;
+  name: string;
+  songs: SetlistSongState[];
 }
 
 export interface StudioState {
   revision: number;
-  setlistName: string;
+  setlist: SetlistState;
   song: {
     id: string;
     title: string;
@@ -86,7 +96,6 @@ export interface StudioState {
     x: number;
     y: number;
   };
-  setlist: SetlistSongState[];
   health: {
     audio: boolean;
     midi: boolean;
