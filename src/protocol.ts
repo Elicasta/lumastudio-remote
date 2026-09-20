@@ -1,4 +1,4 @@
-export const REMOTE_PROTOCOL_VERSION = 1 as const;
+export const REMOTE_PROTOCOL_VERSION = 2 as const;
 
 export const REMOTE_COMMANDS = [
   "transport.play",
@@ -97,6 +97,10 @@ export interface StudioState {
     durationSeconds: number;
     bar: number;
     beat: number;
+    countInActive: boolean;
+    countInBeat: number;
+    countInTotal: number;
+    queuedSectionId: string | null;
   };
   pads: PadState[];
   mixer: MixerChannelState[];
