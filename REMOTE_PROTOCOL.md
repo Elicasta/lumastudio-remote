@@ -99,6 +99,8 @@ Song navigation does not wrap from the last Song back to the first Song.
 - pad.trigger with payload id
 - pad.release with payload id
 
+Each canonical pad state includes its native playback mode and a `ready` flag. The remote disables pads without assigned audio instead of sending a command Studio must reject.
+
 ## Mixer
 
 - mixer.gain with payload id and gainDb
@@ -110,10 +112,10 @@ Mixer channel IDs mirror Studio Track IDs where possible.
 ## Lighting
 
 - lighting.scene with payload id
-- lighting.xy with payload x and y from 0 to 1
 - lighting.blackout with payload enabled
+- lighting.xy with payload x and y from 0 to 1 is reserved for bridge compatibility
 
-Lighting commands remain part of the protocol, but live availability must come from Studio health. The current Studio v0.2 branch does not yet have the final lighting runtime.
+Studio publishes `health.lighting` and `lighting.xySupported`. The remote only enables scene/blackout controls when the lighting runtime is connected, and only enables XY when Studio explicitly advertises XY support. Current Studio-to-LumaRig transport supports scene fire and blackout but reports `xySupported: false`.
 
 ## Safety
 
