@@ -34,11 +34,11 @@ The browser stores the paired session capability locally so reopening the PWA ca
 - play / pause / stop
 - direct Section launch
 - direct Song selection from the Setlist
-- 12 background pads
+- Studio-defined background pad bank with ready/active state
 - audio-track mixer faders
 - mute / solo
 - lighting scene surface
-- moving-head XY surface
+- capability-aware moving-head XY surface, disabled until Studio advertises support
 - blackout
 - Supabase Realtime command relay
 - command acknowledgement + timeout
@@ -67,7 +67,7 @@ The demo data mirrors the Mac `build/v0.2-audio-engine` branch:
 - the same 12 Pad names
 - audio mixer channels mapped to Click, Guide, Drums, Bass, Keys, Guitar, Vocals and Other
 
-MIDI and lighting are not presented as live until the Mac runtime actually provides those engines.
+MIDI and lighting are not presented as live until the Mac runtime reports those engines. Lighting scenes and blackout follow LumaRig connectivity; XY remains disabled while Studio reports `xySupported: false`.
 
 ## Development
 
