@@ -98,6 +98,8 @@ export const demoState: StudioState = {
       "Glass", "Soft", "Wide", "Choir", "Atmos", "Ritual"
     ][index],
     active: index === 0,
+    ready: true,
+    mode: "latch" as const,
     color: padColors[index]
   })),
   mixer: [
@@ -120,6 +122,7 @@ export const demoState: StudioState = {
   })),
   lighting: {
     blackout: false,
+    xySupported: true,
     x: 0.5,
     y: 0.62,
     scenes: [
