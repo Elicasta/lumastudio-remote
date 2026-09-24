@@ -506,9 +506,11 @@ function QuickConsole({
               key={pad.id}
               className={pad.active ? "mini-pad active" : "mini-pad"}
               style={{ "--pad": pad.color } as React.CSSProperties}
-              onPointerDown={() => command("pad.trigger", { id: pad.id })}
-              onPointerUp={() => command("pad.release", { id: pad.id })}
-              onPointerCancel={() => command("pad.release", { id: pad.id })}
+              disabled={!pad.ready}
+              title={pad.ready ? pad.name + " · " + pad.mode : pad.name + " · no audio assigned"}
+              onPointerDown={() => pad.ready && command("pad.trigger", { id: pad.id })}
+              onPointerUp={() => pad.ready && command("pad.release", { id: pad.id })}
+              onPointerCancel={() => pad.ready && command("pad.release", { id: pad.id })}
             >
               <span>{index + 1}</span>
             </button>
@@ -531,6 +533,7 @@ function QuickConsole({
       <XYPad
         x={studio.lighting.x}
         y={studio.lighting.y}
+        disabled={!studio.health.lighting || !studio.lighting.xySupported}
         onChange={(x, y) => command("lighting.xy", { x, y })}
       />
     </div>
@@ -552,16 +555,18 @@ function StatusRow({ label, ok }: { label: string; ok: boolean }) {
 function Pads({ studio, command }: { studio: StudioState; command: CommandFn }) {
   return (
     <section className="page-screen">
-      <PageTitle title="Pads" subtitle="Background textures · press and hold for momentary playback" />
+      <PageTitle title="Pads" subtitle="Background textures · one-shot, loop, hold and latch modes" />
       <div className="pads-grid">
         {studio.pads.map((pad, index) => (
           <button
             key={pad.id}
             className={pad.active ? "pad-card active" : "pad-card"}
             style={{ "--pad": pad.color } as React.CSSProperties}
-            onPointerDown={() => command("pad.trigger", { id: pad.id })}
-            onPointerUp={() => command("pad.release", { id: pad.id })}
-            onPointerCancel={() => command("pad.release", { id: pad.id })}
+            disabled={!pad.ready}
+            title={pad.ready ? pad.name + " · " + pad.mode : "No audio assigned in Studio"}
+            onPointerDown={() => pad.ready && command("pad.trigger", { id: pad.id })}
+            onPointerUp={() => pad.ready && command("pad.release", { id: pad.id })}
+            onPointerCancel={() => pad.ready && command("pad.release", { id: pad.id })}
           >
             <span className="pad-number">{index + 1}</span>
             <div className="wave-bars" aria-hidden>
@@ -573,7 +578,7 @@ function Pads({ studio, command }: { studio: StudioState; command: CommandFn }) 
               ))}
             </div>
             <strong>{pad.name}</strong>
-            <small>{pad.active ? "ACTIVE" : "READY"}</small>
+            <small>{!pad.ready ? "NO AUDIO" : pad.active ? "ACTIVE · " + pad.mode.toUpperCase() : pad.mode.toUpperCase()}</small>
           </button>
         ))}
       </div>
@@ -687,6 +692,8 @@ function Lighting({ studio, command }: { studio: StudioState; command: CommandFn
                 key={scene.id}
                 className={scene.active ? "scene-button active" : "scene-button"}
                 style={{ "--scene": scene.color } as React.CSSProperties}
+                disabled={!studio.health.lighting}
+                title={studio.health.lighting ? "Fire " + scene.name : "LumaRig is not connected"}
                 onClick={() => command("lighting.scene", { id: scene.id })}
               >
                 <i />
@@ -700,6 +707,7 @@ function Lighting({ studio, command }: { studio: StudioState; command: CommandFn
           x={studio.lighting.x}
           y={studio.lighting.y}
           large
+          disabled={!studio.health.lighting || !studio.lighting.xySupported}
           onChange={(x, y) => command("lighting.xy", { x, y })}
         />
 
@@ -707,6 +715,8 @@ function Lighting({ studio, command }: { studio: StudioState; command: CommandFn
           <div className="eyebrow">SAFETY</div>
           <button
             className={studio.lighting.blackout ? "blackout active" : "blackout"}
+            disabled={!studio.health.lighting}
+            title={studio.health.lighting ? "Toggle LumaRig blackout" : "LumaRig is not connected"}
             onClick={() =>
               command("lighting.blackout", {
                 enabled: !studio.lighting.blackout
@@ -727,12 +737,14 @@ function XYPad({
   x,
   y,
   onChange,
-  large = false
+  large = false,
+  disabled = false
 }: {
   x: number;
   y: number;
   onChange: (x: number, y: number) => void;
   large?: boolean;
+  disabled?: boolean;
 }) {
   const padRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
@@ -749,17 +761,19 @@ function XYPad({
     <div className={large ? "xy-panel surface large" : "xy-panel surface"}>
       <div className="mini-header">
         <span>LIGHTING XY</span>
-        <small>moving heads</small>
+        <small>{disabled ? "not available from Studio yet" : "moving heads"}</small>
       </div>
       <div
         ref={padRef}
-        className="xy-pad"
+        className={disabled ? "xy-pad disabled" : "xy-pad"}
+        aria-disabled={disabled}
         onPointerDown={(event) => {
+          if (disabled) return;
           dragging.current = true;
           event.currentTarget.setPointerCapture(event.pointerId);
           setFromPointer(event);
         }}
-        onPointerMove={(event) => dragging.current && setFromPointer(event)}
+        onPointerMove={(event) => !disabled && dragging.current && setFromPointer(event)}
         onPointerUp={() => {
           dragging.current = false;
         }}

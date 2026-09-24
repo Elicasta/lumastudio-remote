@@ -54,6 +54,8 @@ export class RemoteClient {
 
   async connect() {
     this.closedByUser = false;
+    this.latestRevision = -1;
+    this.studioPresent = false;
     this.events.onError(null);
 
     try {
@@ -86,6 +88,8 @@ export class RemoteClient {
       window.clearTimeout(pending.timeout);
     }
     this.pendingCommands.clear();
+    this.latestRevision = -1;
+    this.studioPresent = false;
 
     if (this.channel) {
       await supabase.removeChannel(this.channel);
@@ -96,8 +100,12 @@ export class RemoteClient {
   }
 
   command(command: RemoteCommand, payload?: Record<string, unknown>) {
-    if (!this.channel) {
-      this.events.onError("Remote is not connected to Studio.");
+    if (!this.channel || !this.studioPresent || this.latestRevision < 0) {
+      this.events.onError("Studio is not ready for remote control.");
+      return null;
+    }
+    if (this.pendingCommands.size >= 64) {
+      this.events.onError("Too many remote commands are awaiting acknowledgement. Stop input and verify Studio.");
       return null;
     }
 

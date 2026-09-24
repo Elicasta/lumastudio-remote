@@ -38,6 +38,8 @@ export interface PadState {
   id: string;
   name: string;
   active: boolean;
+  ready: boolean;
+  mode: "one-shot" | "loop" | "hold" | "latch";
   color: string;
 }
 
@@ -116,6 +118,7 @@ export interface StudioState {
   mixer: MixerChannelState[];
   lighting: {
     blackout: boolean;
+    xySupported: boolean;
     scenes: LightingSceneState[];
     x: number;
     y: number;

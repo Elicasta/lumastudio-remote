@@ -1,0 +1,280 @@
+/* LUMA operator foundation v2. Mobile companion edition. */
+:root {
+  color-scheme: dark;
+  --luma-canvas: #0b1117;
+  --luma-chrome: #101820;
+  --luma-panel: #141e27;
+  --luma-raised: #1b2731;
+  --luma-raised-strong: #22323e;
+  --luma-line: #30414d;
+  --luma-line-strong: #455d6b;
+  --luma-text: #e4edf3;
+  --luma-muted: #9aadb9;
+  --luma-dim: #70828f;
+  --luma-focus: #9dc6ea;
+  --luma-live: #78dda9;
+  --luma-preview: #8fb9e3;
+  --luma-cued: #d9b878;
+  --luma-danger: #eda0a5;
+  --luma-radius: 7px;
+}
+
+html, body, #root { background: var(--luma-canvas); }
+.remote-shell {
+  color: var(--luma-text);
+  background: var(--luma-canvas);
+}
+.remote-shell :is(button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--luma-focus);
+  outline-offset: 2px;
+}
+.remote-shell :is(input, select, textarea) { font-variant-numeric: tabular-nums; }
+.remote-shell button {
+  border-color: var(--luma-line);
+  border-radius: var(--luma-radius);
+  transition: border-color 100ms ease, background-color 100ms ease, color 100ms ease;
+}
+.remote-shell button:disabled { cursor: not-allowed; }
+.remote-shell * { scrollbar-color: var(--luma-line-strong) var(--luma-chrome); }
+@media (prefers-reduced-motion: reduce) {
+  .remote-shell button { transition: none; }
+}
+
+/* Keep the companion touch-first while matching desktop LUMA chrome. */
+.remote-shell .topbar {
+  border-color: var(--luma-line);
+  background: color-mix(in srgb, var(--luma-chrome) 96%, transparent);
+  box-shadow: 0 8px 22px rgba(0,0,0,.12);
+}
+.remote-shell .logo-mark {
+  background: linear-gradient(145deg, #638da3, #62637e);
+  filter: saturate(.72);
+}
+.remote-shell .logo small,
+.remote-shell .top-song span,
+.remote-shell .health {
+  color: var(--luma-muted);
+}
+.remote-shell .connection-button {
+  min-height: 40px;
+  border-color: var(--luma-line);
+  background: var(--luma-panel);
+  color: var(--luma-muted);
+}
+.remote-shell .connection-button:hover {
+  border-color: var(--luma-line-strong);
+  color: var(--luma-text);
+}
+.remote-shell .side-rail {
+  border-color: var(--luma-line);
+  background: var(--luma-chrome);
+}
+.remote-shell .rail-tab {
+  min-height: 62px;
+  border-radius: 6px;
+  color: var(--luma-muted);
+}
+.remote-shell .rail-tab:hover {
+  color: var(--luma-text);
+  background: var(--luma-raised);
+}
+.remote-shell .rail-tab.active {
+  color: var(--luma-text);
+  border-color: var(--luma-line-strong);
+  background: var(--luma-raised-strong);
+  box-shadow: inset 3px 0 var(--luma-focus);
+}
+.remote-shell .rail-footer { color: var(--luma-dim); }
+.remote-shell .remote-main { background: var(--luma-canvas); }
+.remote-shell .surface {
+  border-color: var(--luma-line);
+  border-radius: 8px;
+  background: var(--luma-panel);
+  box-shadow: none;
+}
+.remote-shell .eyebrow {
+  color: var(--luma-muted);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: .1em;
+}
+.remote-shell .section-chip {
+  min-height: 60px;
+  border-color: var(--luma-line);
+  border-radius: 6px;
+  background: var(--luma-chrome);
+  color: var(--luma-muted);
+}
+.remote-shell .section-chip:hover { border-color: var(--luma-line-strong); }
+.remote-shell .section-chip.current {
+  border-color: var(--luma-live);
+  background: color-mix(in srgb, var(--luma-live) 9%, var(--luma-chrome));
+  box-shadow: inset 0 -3px var(--luma-live);
+}
+.remote-shell .section-chip.queued {
+  border-color: var(--luma-preview);
+  background: color-mix(in srgb, var(--luma-preview) 8%, var(--luma-chrome));
+}
+.remote-shell .section-chip strong { color: var(--luma-text); }
+.remote-shell .section-chip small,
+.remote-shell .section-chip span { color: var(--luma-muted); }
+.remote-shell .current-card,
+.remote-shell .next-card,
+.remote-shell .song-next-card,
+.remote-shell .system-card {
+  border-color: var(--luma-line);
+}
+.remote-shell .section-hero { letter-spacing: -.035em; }
+.remote-shell .show-progress { background: var(--luma-raised); }
+.remote-shell .show-progress i { background: var(--luma-live); }
+.remote-shell .next-song-meta span {
+  border-color: var(--luma-line);
+  border-radius: 5px;
+  background: var(--luma-chrome);
+  color: var(--luma-muted);
+}
+.remote-shell .next-song-button,
+.remote-shell .queue-button {
+  min-height: 44px;
+  border-color: var(--luma-line-strong);
+  background: var(--luma-raised-strong);
+  color: var(--luma-text);
+}
+.remote-shell .transport-console {
+  border-color: var(--luma-line);
+  background: var(--luma-chrome);
+}
+.remote-shell .transport-key {
+  min-height: 52px;
+  border-color: var(--luma-line);
+  background: var(--luma-raised);
+}
+.remote-shell .transport-key:hover { border-color: var(--luma-line-strong); }
+.remote-shell .go-button {
+  min-height: 62px;
+  border-color: color-mix(in srgb, var(--luma-live) 55%, var(--luma-line));
+  background: color-mix(in srgb, var(--luma-live) 80%, white);
+  color: #10271f;
+  box-shadow: none;
+}
+.remote-shell .stop {
+  border-color: color-mix(in srgb, var(--luma-danger) 42%, var(--luma-line));
+  color: #f4c1c4;
+  background: color-mix(in srgb, var(--luma-danger) 9%, var(--luma-raised));
+}
+.remote-shell .auto-follow-banner {
+  border-color: var(--luma-line);
+  background: var(--luma-panel);
+  color: var(--luma-muted);
+}
+.remote-shell .quick-console,
+.remote-shell .page-screen {
+  color: var(--luma-text);
+}
+.remote-shell .mini-header,
+.remote-shell .panel-heading,
+.remote-shell .page-title {
+  color: var(--luma-muted);
+}
+.remote-shell .pads-grid > button,
+.remote-shell .mini-pad-grid > button,
+.remote-shell .scene-buttons > button {
+  border-color: var(--luma-line);
+  background: var(--luma-raised);
+}
+.remote-shell .pads-grid > button:hover:not(:disabled),
+.remote-shell .mini-pad-grid > button:hover:not(:disabled),
+.remote-shell .scene-buttons > button:hover:not(:disabled) {
+  border-color: var(--luma-line-strong);
+}
+.remote-shell .pads-grid > button.active,
+.remote-shell .mini-pad-grid > button.active,
+.remote-shell .scene-buttons > button.active {
+  border-color: var(--luma-live);
+  background: color-mix(in srgb, var(--luma-live) 12%, var(--luma-raised));
+}
+.remote-shell .console-channel {
+  border-color: var(--luma-line);
+  background: var(--luma-panel);
+}
+.remote-shell .vertical-meter,
+.remote-shell .mini-track {
+  background: #071019;
+  border-color: var(--luma-line);
+}
+.remote-shell .channel-buttons button {
+  min-height: 38px;
+  border-color: var(--luma-line);
+  background: var(--luma-raised);
+}
+.remote-shell .lighting-page-grid > .surface,
+.remote-shell .scene-panel {
+  border-color: var(--luma-line);
+}
+.remote-shell .lighting-safety {
+  border-color: color-mix(in srgb, var(--luma-danger) 45%, var(--luma-line));
+  background: color-mix(in srgb, var(--luma-danger) 8%, var(--luma-panel));
+}
+.remote-shell .axis {
+  border-color: var(--luma-line);
+  background: var(--luma-chrome);
+}
+.remote-shell .live-badge {
+  border-color: color-mix(in srgb, var(--luma-live) 50%, var(--luma-line));
+  background: color-mix(in srgb, var(--luma-live) 10%, var(--luma-panel));
+  color: #caf1dc;
+}
+.remote-shell .setlist-list > button {
+  min-height: 54px;
+  border-color: var(--luma-line);
+  background: var(--luma-panel);
+}
+.remote-shell .setlist-list > button:hover { border-color: var(--luma-line-strong); }
+.remote-shell .connect-backdrop { background: rgba(3, 7, 10, .82); }
+.remote-shell .connect-sheet {
+  border-color: var(--luma-line);
+  border-radius: 10px;
+  background: var(--luma-panel);
+}
+.remote-shell .pin-input {
+  min-height: 48px;
+  border-color: var(--luma-line);
+  border-radius: 6px;
+  background: var(--luma-chrome);
+  color: var(--luma-text);
+}
+.remote-shell .connect-primary {
+  min-height: 46px;
+  border-color: var(--luma-line-strong);
+  background: var(--luma-raised-strong);
+  color: var(--luma-text);
+}
+.remote-shell .demo-button,
+.remote-shell .close-link {
+  min-height: 44px;
+}
+.remote-shell .connect-foot { color: var(--luma-muted); }
+
+@media (max-width: 720px) {
+  .remote-shell .topbar {
+    background: var(--luma-chrome);
+    border-color: var(--luma-line);
+  }
+  .remote-shell .mobile-nav {
+    border-color: var(--luma-line);
+    background: var(--luma-chrome);
+  }
+  .remote-shell .mobile-nav button {
+    min-height: 48px;
+    color: var(--luma-muted);
+  }
+  .remote-shell .mobile-nav button.active {
+    color: var(--luma-text);
+    background: var(--luma-raised-strong);
+    box-shadow: inset 0 2px var(--luma-focus);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .remote-shell :is(.dot.ok, .live-badge) { box-shadow: none; }
+}
